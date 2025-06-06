@@ -6,15 +6,22 @@ jobs:
     steps:
       - checkout
       - run:
-          name: 编译Java代码
+          name: 编译主代码
           command: |
             mkdir -p out
-            javac -d out $(find . -name "*.java")
+            find ./src -name "*.java" > sources.txt
+            javac -d out @sources.txt
+      - run:
+          name: 编译测试代码
+          command: |
+            mkdir -p test-out
+            wget -q https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.3/junit-platform-console-standalone-1.9.3.jar
+            find ./test -name "*.java" > test_sources.txt
+            javac -cp out:junit-platform-console-standalone-1.9.3.jar -d test-out @test_sources.txt
       - run:
           name: 运行单元测试
           command: |
-            wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.3/junit-platform-console-standalone-1.9.3.jar
-            java -jar junit-platform-console-standalone-1.9.3.jar --class-path out --scan-class-path
+            java -jar junit-platform-console-standalone-1.9.3.jar --class-path out:test-out --scan-class-path
 workflows:
   java-test-workflow:
     jobs:
