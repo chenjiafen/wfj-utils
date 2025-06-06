@@ -9,14 +9,14 @@ jobs:
           name: 编译主代码
           command: |
             mkdir -p out
-            find ./src -name "*.java" > sources.txt
+            find wfj-utils/src -name "*.java" > sources.txt
             javac -d out @sources.txt
       - run:
           name: 编译测试代码
           command: |
             mkdir -p test-out
             wget -q https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.3/junit-platform-console-standalone-1.9.3.jar
-            find ./test -name "*.java" > test_sources.txt
+            find wfj-utils/test -name "*.java" > test_sources.txt
             javac -cp out:junit-platform-console-standalone-1.9.3.jar -d test-out @test_sources.txt
       - run:
           name: 运行单元测试
