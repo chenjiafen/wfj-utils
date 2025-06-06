@@ -8,27 +8,32 @@ jobs:
       - run:
           name: "Say hello"
           command: "echo Hello, World!"
-  playwright-e2e:
+  maven-test:
     docker:
-      - image: mcr.microsoft.com/playwright:v1.44.1-jammy
+      - image: cimg/openjdk:17.0
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: npm ci
+          name: Restore Maven cache
+          command: |
+            mkdir -p ~/.m2
+      - restore_cache:
+          keys:
+            - maven-{{ checksum "pom.xml" }}
+            - maven-
       - run:
-          name: Install Playwright Browsers
-          command: npx playwright install --with-deps
-      - run:
-          name: Run Playwright end-to-end tests
-          command: npx playwright test
-      - store_artifacts:
-          path: test-results
-          destination: playwright-test-results
+          name: Run Unit Tests
+          command: mvn test
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: maven-{{ checksum "pom.xml" }}
+      - store_test_results:
+          path: target/surefire-reports
 workflows:
   say-hello-workflow:
     jobs:
       - say-hello
-      - playwright-e2e:
+      - maven-test:
           requires:
             - say-hello
