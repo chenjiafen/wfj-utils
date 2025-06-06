@@ -1,39 +1,21 @@
 version: 2.1
 jobs:
-  say-hello:
-    docker:
-      - image: cimg/base:current
-    steps:
-      - checkout
-      - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
-  maven-test:
+  java-test:
     docker:
       - image: cimg/openjdk:17.0
     steps:
       - checkout
       - run:
-          name: Restore Maven cache
+          name: 编译Java代码
           command: |
-            mkdir -p ~/.m2
-      - restore_cache:
-          keys:
-            - maven-{{ checksum "pom.xml" }}
-            - maven-
+            mkdir -p out
+            javac -d out $(find . -name "*.java")
       - run:
-          name: Run Unit Tests
-          command: mvn test
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: maven-{{ checksum "pom.xml" }}
-      - store_test_results:
-          path: target/surefire-reports
+          name: 运行单元测试
+          command: |
+            wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.3/junit-platform-console-standalone-1.9.3.jar
+            java -jar junit-platform-console-standalone-1.9.3.jar --class-path out --scan-class-path
 workflows:
-  say-hello-workflow:
+  java-test-workflow:
     jobs:
-      - say-hello
-      - maven-test:
-          requires:
-            - say-hello
+      - java-test
